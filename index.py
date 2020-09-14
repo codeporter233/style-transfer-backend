@@ -2,10 +2,8 @@ from os import path
 
 from flask import Flask, redirect, request
 
-
 from pywsgi import WSGIServer
 from startup import load_plugin
-from utils.scheduler import scheduler
 
 app = Flask(__name__)
 

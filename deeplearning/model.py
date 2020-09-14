@@ -19,7 +19,6 @@ def get_vgg19_model(layers):
     outputs = [vgg.get_layer(layer).output for layer in layers]
     # 使用outputs创建新的模型
     model = tf.keras.Model([vgg.input, ], outputs)
-    model.summary()
     # 锁死参数，不进行训练
     model.trainable = False
     return model

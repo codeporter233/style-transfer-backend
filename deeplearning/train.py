@@ -5,6 +5,7 @@ from .model import NeuralStyleTransferModel
 from . import settings
 from . import utils
 import utils.makedir as mkdir
+# tf.config.experimental_run_functions_eagerly(True)
 
 
 def _compute_content_loss(noise_features, target_features, M, N):
@@ -81,8 +82,9 @@ def total_loss(noise_features, target_content_features, target_style_features, M
     style_loss = compute_style_loss(noise_features['style'], target_style_features, M, N)
     return content_loss * settings.CONTENT_LOSS_FACTOR + style_loss * settings.STYLE_LOSS_FACTOR
 
+
 # 使用tf.function加速训练
-@tf.function
+# @tf.function
 def train_one_step(model, target_content_features, target_style_features, optimizer, noise_image, M, N):
     """
     一次迭代过程
@@ -96,6 +98,29 @@ def train_one_step(model, target_content_features, target_style_features, optimi
     # 梯度下降，更新噪声图片
     optimizer.apply_gradients([(grad, noise_image)])
     return loss
+
+# class F():
+#     def __init__(self, model, target_content_features, target_style_features, optimizer, noise_image, M, N):
+#         self.model = model
+#         self.target_content_features = target_content_features
+#         self.target_style_features = target_style_features
+#         self.optimizer = optimizer
+#         self.noise_image = noise_image
+#         self.M = M
+#         self.N = N
+#
+#     @tf.function
+#     def __call__(self):
+#
+#         with tf.GradientTape() as tape:
+#             noise_outputs = self.model(self.noise_image)
+#             loss = total_loss(noise_outputs, self.target_content_features, self.target_style_features, self.M, self.N)
+#         # 求梯度
+#         grad = tape.gradient(loss, self.noise_image)
+#         # 梯度下降，更新噪声图片
+#         self.optimizer.apply_gradients([(grad, self.noise_image)])
+#         return loss
+
 
 
 def get_image(content_path, style_path, file_path):
@@ -126,6 +151,8 @@ def get_image(content_path, style_path, file_path):
         with tqdm(total=settings.STEPS_PER_EPOCH, desc='Epoch {}/{}'.format(epoch + 1, settings.EPOCHS)) as pbar:
             # 每个epoch训练settings.STEPS_PER_EPOCH次
             for step in range(settings.STEPS_PER_EPOCH):
+                # f = F(model, target_content_features, target_style_features, optimizer, noise_image, M, N)
+                # _loss = f()
                 _loss = train_one_step(model, target_content_features, target_style_features, optimizer, noise_image, M, N)
                 pbar.set_postfix({'loss': '%.4f' % float(_loss)})
                 pbar.update(1)
